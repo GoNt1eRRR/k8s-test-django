@@ -5,13 +5,15 @@ ENV PYTHONDONTWRITEBYTECODE 1
 WORKDIR /webapp
 COPY requirements.txt /webapp/
 RUN apt update && apt install -y python3-pip                                  \
-    && pip3 install -r requirements.txt                                       \
+    && pip3 install --no-cache-dir -r requirements.txt                                       \
     && apt remove -y python3-pip                                              \
-    && apt autoremove --purge -y                                              \
-    && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/*.list
+    && apt autoremove -y                                              \
+    && rm -rf /var/lib/apt/lists/*
 COPY unit_config.json /docker-entrypoint.d/
 COPY src /webapp/src
 WORKDIR /webapp/src
-RUN SECRET_KEY=empty python manage.py collectstatic --noinput
+ENV SECRET_KEY=empty
+ENV ALLOWED_HOSTS=localhost,127.0.0.1
+RUN python manage.py collectstatic --noinput
 EXPOSE 80
 VOLUME ["/media"]
