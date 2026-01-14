@@ -138,3 +138,12 @@ kubectl create job --from=cronjob/django-clearsessions django-clearsessions-once
 По умолчанию, сессии удаляются ежедневно в 00:00
 
 При необходимости значение можно изменить в файле cronjob-clearsessions.yaml
+
+### Миграции базы данных
+
+Для применения миграций в Kubernetes используется отдельный Job.
+
+Команда запуска миграций:
+```
+kubectl apply -f migrate-job.yaml
+```
