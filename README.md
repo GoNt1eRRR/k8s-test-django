@@ -75,3 +75,22 @@ $ docker compose build web
 `ALLOWED_HOSTS` -- настройка Django со списком разрешённых адресов. Если запрос прилетит на другой адрес, то сайт ответит ошибкой 400. Можно перечислить несколько адресов через запятую, например `127.0.0.1,192.168.0.1,site.test`. [Документация Django](https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts).
 
 `DATABASE_URL` -- адрес для подключения к базе данных PostgreSQL. Другие СУБД сайт не поддерживает. [Формат записи](https://github.com/jacobian/dj-database-url#url-schema).
+
+## Запуск сайта через K8S minikube
+
+Перейдите в основной каталог проекта, в этой директории необходимо создать файл .env и заполнить его обязательными переменными окружения:
+
+- SECRET_KEY
+- DATABASE_URL
+
+После заполнения переменных окружения перейдите в каталог backend_main_django.
+
+Создайте образ в minikube, запустив команду:
+```
+minikube image build . -t django-app:latest
+```
+Затем перейдите в каталог k8s и введите команду, которая создает Secret:
+```
+kubectl create secret generic django-secret --from-env-file=.env
+```
+В манифесте Deployment секреты должны подключаться через secretKeyRef, а не напрямую.
