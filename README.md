@@ -94,3 +94,31 @@ minikube image build . -t django-app:latest
 kubectl create secret generic django-secret --from-env-file=.env
 ```
 В манифесте Deployment секреты должны подключаться через secretKeyRef, а не напрямую.
+
+
+Для создания и запуска деплоймента, введите команду:
+```
+kubectl apply -f deployment.yaml
+```
+
+Для запуска сервиса, введите команду:
+```
+kubectl apply -f service.yaml   
+```
+Для доступа к сайту извне используется Ingress, без публикации портов у сервисов.
+
+Запуск ingress осуществляется командой:
+```
+kubectl apply -f ingress.yaml   
+```
+Для доступности сайта через браузер необходимо добавить в файл hosts запись
+
+Сперва узнайте IP minikube:
+```
+minikube ip
+```
+Затем добавьте данные в hosts
+```
+<minicube_ip> star-burger.test
+```
+
