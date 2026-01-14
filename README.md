@@ -122,3 +122,19 @@ minikube ip
 <minicube_ip> star-burger.test
 ```
 
+### Автоматическая очистка Django-сессий через CronJob
+Django хранит сессии пользователей в базе данных, для автоматизации очистки настроен Kubernetes CronJob.
+
+Примените CronJob-манифест:
+```
+kubectl apply -f cronjob-clearsessions.yaml
+```
+
+Также можно запустить CronJob принудительно:
+```
+kubectl create job --from=cronjob/django-clearsessions django-clearsessions-once
+```
+
+По умолчанию, сессии удаляются ежедневно в 00:00
+
+При необходимости значение можно изменить в файле cronjob-clearsessions.yaml
