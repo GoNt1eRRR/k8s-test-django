@@ -80,8 +80,8 @@ $ docker compose build web
 
 Перейдите в основной каталог проекта, в этой директории необходимо создать файл .env и заполнить его обязательными переменными окружения:
 
-- SECRET_KEY
-- DATABASE_URL
+- `SECRET_KEY`
+- `DATABASE_URL`
 
 После заполнения переменных окружения перейдите в каталог backend_main_django.
 
@@ -120,6 +120,26 @@ minikube ip
 Затем добавьте данные в hosts
 ```
 <minicube_ip> star-burger.test
+```
+
+### Запуск PostgreSQL в Kubernetes (Helm)
+Установка и развёртывание:
+```
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+```
+```
+helm install <RELEASE_NAME> bitnami/postgresql --set auth.username=<DB_USERNAME> --set auth.password=<DB_PASSWORD> --set auth.database=<DB_NAME> --set primary.persistence.enabled=false
+```
+
+В таком формате должна быть `DATABASE_URL` в файле `.env`:
+
+```
+DATABASE_URL=postgres://<DB_USERNAME>:<DB_PASSWORD>@<DB_SERVICE_NAME>:<DB_PORT>/<DB_NAME>
+```
+Пример:
+```
+DATABASE_URL=postgres://django:django_password@postgres-postgresql:5432/django_db
 ```
 
 ### Автоматическая очистка Django-сессий через CronJob
