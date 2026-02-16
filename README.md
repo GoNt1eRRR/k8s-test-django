@@ -167,3 +167,97 @@ kubectl create job --from=cronjob/django-clearsessions django-clearsessions-once
 ```
 kubectl apply -f migrate-job.yaml
 ```
+
+## Запуск сайта в dev окружении в кластере
+
+### Установка SSL-сертификата
+
+Скачайте сертификат согласно [документации](https://yandex.cloud/ru/docs/managed-postgresql/operations/connect) Yandex Cloud
+
+Создайте Secret в кластере:
+```
+kubectl create secret generic pg-ssl-cert --from-file=root.crt=<PATH_TO_ROOT_CERT> --namespace=<YOUR_NAMESPACE>
+```
+
+### Сборка и публикация Docker-образа
+Для сборки и публикаций образов dev окружения используется [репозиторий](https://hub.docker.com/r/gont1er/k8s-django-dev) на DockerHub.
+
+Получить hash коммита:
+```
+git rev-parse --short HEAD
+```
+
+Сборка образа:
+```
+docker build -t gont1er/k8s-django-dev:<COMMIT_HASH> .
+```
+
+Публикация образа:
+```
+docker push gont1er/k8s-django-dev:<COMMIT_HASH>
+```
+
+### Создание секрета с переменными окружения
+Создайте файл `.env`:
+```
+DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/DBNAME
+SECRET_KEY=your-secret-key
+ALLOWED_HOSTS=*
+DEBUG=False
+```
+
+Создайте Kubernetes Secret:
+```
+kubectl create secret generic django-secret --from-env-file=.env --namespace=<YOUR_NAMESPACE>
+```
+
+### Обновление версии приложения
+
+Перейдите в `Deploy-Yc-sirius/dev`
+
+Измените в `deployment.yaml`:
+```
+image: gont1er/k8s-django-dev:<NEW_COMMIT_HASH>
+```
+
+Примените изменения:
+```
+kubectl apply -f deployment.yaml
+kubectl rollout restart deployment django-app --namespace=<YOUR_NAMESPACE>
+```
+
+### Проверка работы сайта
+Запуск port-forward:
+```
+kubectl port-forward deployment/main-nginx 8080:80 --namespace=<YOUR_NAMESPACE>
+```
+
+Сайт доступен по:
+```
+http://localhost:8080
+```
+
+## Выполнение management-команд
+
+Перед выполнением команд необходимо чтобы в файлах migrate-job.yaml и cronjob-clearsessions.yaml в строке image была указана версия, которая равна хешу коммита в используемом deployment.
+
+### Автоматическая очистка Django-сессий через CronJob
+
+Запуск CronJob-манифеста:
+```
+kubectl apply -f cronjob-clearsessions.yaml --namespace=<YOUR_NAMESPACE>
+```
+
+По умолчанию, сессии удаляются ежедневно в 00:00
+
+При необходимости значение можно изменить в файле cronjob-clearsessions.yaml
+
+### Миграции базы данных
+
+Команда запуска миграций:
+```
+kubectl apply -f migrate-job.yaml --namespace=<YOUR_NAMESPACE>
+```
+
+## Пример работающего сайта
+[Сайт](https://edu-denis-voroncov.yc-sirius-dev.pelid.team/)
