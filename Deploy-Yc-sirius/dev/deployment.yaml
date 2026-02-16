@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app
+  namespace: edu-denis-voroncov
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app
+    spec:
+      containers:
+        - name: django
+          image: gont1er/k8s-django-dev:d3132a7
+          imagePullPolicy: IfNotPresent
+          
+          envFrom:
+            - secretRef:
+                name: django-secret
+                
+          ports:
+            - containerPort: 80
+              protocol: TCP
